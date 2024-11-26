@@ -3,9 +3,18 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "test": "echo \"No tests specified\" && exit 1"
   },
-  "author": "",
+  "author": "Your Name",
   "license": "ISC",
-  "description": ""
+  "description": "An app for learning vocabulary with interactive quizzes",
+  "dependencies": {
+    "xlsx": "^0.17.0",
+    "vue": "^2.6.14"
+  },
+  "devDependencies": {
+    "webpack": "^5.74.0",
+    "babel-loader": "^8.2.2"
+  }
 }

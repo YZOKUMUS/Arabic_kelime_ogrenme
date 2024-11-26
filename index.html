@@ -83,7 +83,7 @@
 
                             this.isTestStarted = true;
                             this.showOptions();
-                            this.readWord(this.currentWord); // Başlangıçta ilk kelimeyi oku
+                            setTimeout(() => this.readWord(this.currentWord), 2000); // 2 saniye sonra oku
                         } catch (err) {
                             alert('Hata: Excel dosyası okunamadı.');
                         }
@@ -91,6 +91,7 @@
 
                     reader.readAsArrayBuffer(file);
                 },
+
                 // Arapça kelimeyi okuma fonksiyonu
                 readWord(card) {
                     // Eğer kelime daha önce okunduysa tekrar okuma
@@ -106,6 +107,7 @@
                         console.warn('Tarayıcınız konuşma sentezlemesini desteklemiyor.');
                     }
                 },
+
                 showOptions() {
                     const correctOption = this.currentWord.turkish;
                     const otherOptions = this.wordCards
@@ -119,6 +121,7 @@
                     this.currentOptions = this.shuffleArray([correctOption, ...randomIncorrectOptions]);
                     this.correctAnswer = correctOption;
                 },
+
                 checkAnswer(option) {
                     this.isCorrect = option === this.correctAnswer;
                     this.answerShown = true;
@@ -130,23 +133,25 @@
                     }
 
                     // Sorudan sonra Arapça kelimeyi tekrar oku
-                    this.readWord(this.currentWord);
+                    setTimeout(() => this.readWord(this.currentWord), 2000); // 2 saniye sonra oku
 
                     // Otomatik olarak bir sonraki karta geçiş
                     setTimeout(() => this.nextCard(), 1500);
                 },
+
                 nextCard() {
                     this.answerShown = false;
                     this.hasRead = false; // Her yeni kartta okuma flag'ini sıfırla
                     this.currentCardIndex++;
                     if (this.currentCardIndex < this.wordCards.length) {
                         this.showOptions();
-                        this.readWord(this.currentWord); // Yeni kart okunsun
+                        setTimeout(() => this.readWord(this.currentWord), 2000); // 2 saniye sonra oku
                     } else {
                         alert('Test tamamlandı! Skorunuz: ' + this.correctCount + '/' + this.wordCards.length);
                         this.resetTest();
                     }
                 },
+
                 resetTest() {
                     this.isTestStarted = false;
                     this.currentCardIndex = 0;
@@ -156,6 +161,7 @@
                     this.currentOptions = [];
                     this.hasRead = false; // Test sıfırlandığında okuma flag'ini sıfırla
                 },
+
                 shuffleArray(array) {
                     for (let i = array.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
