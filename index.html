@@ -13,8 +13,8 @@
         <input type="file" @change="loadExcel" />
         <div v-if="isTestStarted">
             <div v-if="answerShown">
-                <p v-if="isCorrect" class="correct-answer">Doğru cevap!</p>
-                <p v-else class="wrong-answer">Yanlış cevap! Doğru cevap: {{ correctAnswer }}</p>
+                <p v-if="isCorrect" class="correct-answer">Doğru cevap! 🎉</p>
+                <p v-else class="wrong-answer">Yanlış cevap! 😞 Doğru cevap: {{ correctAnswer }}</p>
             </div>
             <div v-else>
                 <p class="arabic">{{ currentWord.arabic }}</p>
@@ -29,6 +29,10 @@
         <div class="score">
             <p>Doğru: {{ correctCount }}</p>
             <p>Yanlış: {{ incorrectCount }}</p>
+        </div>
+        <!-- İlerlemenin bar grafiği -->
+        <div class="progress-bar">
+            <div :style="{ width: progressPercentage + '%' }" class="progress"></div>
         </div>
     </div>
 
@@ -45,11 +49,14 @@
                 incorrectCount: 0,
                 answerShown: false,
                 isCorrect: false,
-                hasRead: false, // Eklenen durum: Kelimenin okunduğunu kontrol etmek
+                hasRead: false,
             },
             computed: {
                 currentWord() {
                     return this.wordCards[this.currentCardIndex] || {};
+                },
+                progressPercentage() {
+                    return (this.correctCount / this.wordCards.length) * 100;
                 }
             },
             methods: {
@@ -111,10 +118,10 @@
                 showOptions() {
                     const correctOption = this.currentWord.turkish;
                     const otherOptions = this.wordCards
-                        .filter((_, index) => index !== this.currentCardIndex)  // Doğru cevabı dışarıda bırak
+                        .filter((_, index) => index !== this.currentCardIndex) // Doğru cevabı dışarıda bırak
                         .map(card => card.turkish);
 
-                    // Diğer yanlış cevaplardan 3 tane rastgele seçiyoruz
+                    // Diğer yanlış cevaplardan her seferinde 3 tane rastgele seçiyoruz
                     const randomIncorrectOptions = this.shuffleArray(otherOptions).slice(0, 3);
 
                     // Doğru cevabı diğer yanlış cevaplarla karıştır
