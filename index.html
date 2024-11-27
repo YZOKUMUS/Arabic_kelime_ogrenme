@@ -49,7 +49,6 @@
                 incorrectCount: 0,
                 answerShown: false,
                 isCorrect: false,
-                hasRead: false,
             },
             computed: {
                 currentWord() {
@@ -66,10 +65,7 @@
                     const reader = new FileReader();
 
                     // Yeni dosya seçildiğinde doğru/yanlış sayaçlarını sıfırla
-                    this.correctCount = 0;
-                    this.incorrectCount = 0;
-                    this.currentCardIndex = 0;
-                    this.hasRead = false;
+                    this.resetCounters();
 
                     reader.onload = (e) => {
                         try {
@@ -83,14 +79,13 @@
                             this.wordCards = jsonData.map(row => ({
                                 arabic: row['arabic_word'] || 'Bilinmiyor',
                                 turkish: row['turkish_meaning'] || 'Bilinmiyor',
+                                hasRead: false // her kelimenin okunduğunu takip et
                             }));
 
-                            // Verileri rastgele sıraya koy
-                            this.wordCards = this.shuffleArray(this.wordCards);
-
+                            this.shuffleArray(this.wordCards);
                             this.isTestStarted = true;
                             this.showOptions();
-                            setTimeout(() => this.readWord(this.currentWord), 2000); // 2 saniye sonra oku
+                            this.readWord(this.currentWord); // Kelimeyi oku
                         } catch (err) {
                             alert('Hata: Excel dosyası okunamadı.');
                         }
@@ -99,17 +94,24 @@
                     reader.readAsArrayBuffer(file);
                 },
 
+                resetCounters() {
+                    this.correctCount = 0;
+                    this.incorrectCount = 0;
+                    this.currentCardIndex = 0;
+                    this.answerShown = false;
+                    this.isCorrect = false;
+                },
+
                 // Arapça kelimeyi okuma fonksiyonu
                 readWord(card) {
-                    // Eğer kelime daha önce okunduysa tekrar okuma
-                    if (this.hasRead) return;
+                    if (card.hasRead) return; // Eğer kelime okunduysa tekrar okuma
 
                     const utterance = new SpeechSynthesisUtterance(card.arabic);
                     utterance.lang = 'ar-SA'; // Arapça dil kodu
 
                     if ('speechSynthesis' in window) {
                         speechSynthesis.speak(utterance);
-                        this.hasRead = true; // Kelimenin okunduğunu işaretle
+                        card.hasRead = true; // Kelimenin okunduğunu işaretle
                     } else {
                         console.warn('Tarayıcınız konuşma sentezlemesini desteklemiyor.');
                     }
@@ -140,7 +142,7 @@
                     }
 
                     // Sorudan sonra Arapça kelimeyi tekrar oku
-                    setTimeout(() => this.readWord(this.currentWord), 2000); // 2 saniye sonra oku
+                    this.readWord(this.currentWord);
 
                     // Otomatik olarak bir sonraki karta geçiş
                     setTimeout(() => this.nextCard(), 1500);
@@ -148,25 +150,22 @@
 
                 nextCard() {
                     this.answerShown = false;
-                    this.hasRead = false; // Her yeni kartta okuma flag'ini sıfırla
                     this.currentCardIndex++;
+
                     if (this.currentCardIndex < this.wordCards.length) {
                         this.showOptions();
-                        setTimeout(() => this.readWord(this.currentWord), 2000); // 2 saniye sonra oku
+                        this.readWord(this.currentWord); // Kelimeyi oku
                     } else {
-                        alert('Test tamamlandı! Skorunuz: ' + this.correctCount + '/' + this.wordCards.length);
+                        alert(`Test tamamlandı! Skorunuz: ${this.correctCount}/${this.wordCards.length}`);
                         this.resetTest();
                     }
                 },
 
                 resetTest() {
                     this.isTestStarted = false;
-                    this.currentCardIndex = 0;
-                    this.correctCount = 0;
-                    this.incorrectCount = 0;
                     this.wordCards = [];
                     this.currentOptions = [];
-                    this.hasRead = false; // Test sıfırlandığında okuma flag'ini sıfırla
+                    this.resetCounters();
                 },
 
                 shuffleArray(array) {
