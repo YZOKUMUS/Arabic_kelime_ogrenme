@@ -8,7 +8,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* Genel ayarlar */
         *,
         *::before,
         *::after {
@@ -174,8 +173,7 @@
 
                             this.wordCards = jsonData.map(row => ({
                                 arabic: row['arabic_word'] || 'Bilinmiyor',
-                                turkish: row['turkish_meaning'] || 'Bilinmiyor',
-                                hasRead: false
+                                turkish: row['turkish_meaning'] || 'Bilinmiyor'
                             }));
 
                             this.shuffleArray(this.wordCards);
@@ -199,14 +197,11 @@
                 },
 
                 readWord(card) {
-                    if (card.hasRead) return;
-
                     const utterance = new SpeechSynthesisUtterance(card.arabic);
                     utterance.lang = 'ar-SA';
 
                     if ('speechSynthesis' in window) {
                         speechSynthesis.speak(utterance);
-                        card.hasRead = true;
                     } else {
                         console.warn('Tarayıcınız konuşma sentezlemesini desteklemiyor.');
                     }
@@ -232,8 +227,6 @@
                     } else {
                         this.incorrectCount++;
                     }
-
-                    this.readWord(this.currentWord);
 
                     setTimeout(() => this.nextCard(), 1500);
                 },
