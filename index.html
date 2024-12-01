@@ -7,8 +7,14 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
     <style>
+        /* Genel ayarlar */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
@@ -46,21 +52,25 @@
         }
 
         .arabic {
-            font-size: 40px;
+            font-size: min(15vw, 48px);
+            margin: 20px auto;
             font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 20px;
+            color: #333;
+            background-color: #fff;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            padding: 20px;
         }
 
         .options button {
+            font-size: 20px;
+            padding: 15px 30px;
+            margin: 10px;
             background-color: #3498db;
             color: white;
             border: none;
-            padding: 15px 30px;
-            margin: 10px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 18px;
             transition: background-color 0.3s ease;
         }
 
@@ -70,21 +80,16 @@
 
         .correct-answer {
             color: #2ecc71;
-            font-size: 22px;
-            font-weight: bold;
-            margin-top: 20px;
+            font-size: 24px;
         }
 
         .wrong-answer {
             color: #e74c3c;
-            font-size: 22px;
-            font-weight: bold;
-            margin-top: 20px;
+            font-size: 24px;
         }
 
         .score {
             margin-top: 20px;
-            font-size: 18px;
         }
 
         .progress-bar {
