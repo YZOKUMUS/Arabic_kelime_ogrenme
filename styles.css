@@ -27,88 +27,51 @@ body {
     background-color: #fff;
     border: 2px solid #4CAF50;
     border-radius: 10px;
-    padding: 1rem 2rem;
-    display: inline-block;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.3s ease-in-out;
+    padding: 20px;
 }
 
-.arabic:hover {
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* Cevap seçenekleri butonları */
-.options {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-top: 20px;
-}
-
+/* Buton stilleri */
 .options button {
-    padding: 1rem 2rem;
-    font-size: 1.125rem; /* 18px */
+    font-size: 20px;
+    padding: 15px 30px;
+    margin: 10px;
+    background-color: #3498db;
+    color: white;
+    border: none;
     border-radius: 5px;
     cursor: pointer;
-    background-color: #4CAF50;
-    color: #fff;
-    border: none;
-    transition: background-color 0.3s, transform 0.2s ease-in-out;
+    transition: background-color 0.3s ease;
 }
 
 .options button:hover {
-    background-color: #45a049;
-    transform: scale(1.05);
+    background-color: #2980b9;
 }
 
-.options button:focus {
-    outline: none;
-    box-shadow: 0 0 5px rgba(76, 175, 80, 0.6);
+/* Sonuç metin stilleri */
+.correct-answer {
+    color: #2ecc71;
+    font-size: 24px;
 }
 
-/* Cevap mesajları */
-.correct-answer,
 .wrong-answer {
-    font-size: 1.375rem; /* 22px */
-    font-weight: bold;
+    color: #e74c3c;
+    font-size: 24px;
+}
+
+.score {
     margin-top: 20px;
 }
 
-.correct-answer {
-    color: #4CAF50; /* Yeşil */
-}
-
-.wrong-answer {
-    color: #F44336; /* Kırmızı */
-}
-
-/* Doğru ve yanlış sayaçları */
-.score {
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
-    background-color: #fff;
-    padding: 1rem 2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    display: flex;
-    gap: 2rem;
-    font-size: 1.125rem;
-}
-
-/* İlerlemenin bar grafiği */
 .progress-bar {
     width: 100%;
     height: 10px;
-    background-color: #ddd;
+    background-color: #ecf0f1;
     border-radius: 5px;
     margin-top: 20px;
-    margin-bottom: 20px;
 }
 
 .progress {
     height: 100%;
-    background-color: #4CAF50;
+    background-color: #3498db;
     border-radius: 5px;
-    transition: width 0.5s ease-in-out;
 }

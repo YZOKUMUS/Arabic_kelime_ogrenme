@@ -6,7 +6,101 @@
     <title>Excel Quiz</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #app {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        input[type="file"] {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        input[type="file"]:hover {
+            background-color: #45a049;
+        }
+
+        .arabic {
+            font-size: 40px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .options button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+        }
+
+        .options button:hover {
+            background-color: #2980b9;
+        }
+
+        .correct-answer {
+            color: #2ecc71;
+            font-size: 22px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .wrong-answer {
+            color: #e74c3c;
+            font-size: 22px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .score {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: #3498db;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
     <div id="app">
@@ -25,12 +119,10 @@
                 </div>
             </div>
         </div>
-        <!-- Sağ alt köşede doğru ve yanlış sayaçları -->
         <div class="score">
             <p>Doğru: {{ correctCount }}</p>
             <p>Yanlış: {{ incorrectCount }}</p>
         </div>
-        <!-- İlerlemenin bar grafiği -->
         <div class="progress-bar">
             <div :style="{ width: progressPercentage + '%' }" class="progress"></div>
         </div>
@@ -64,7 +156,6 @@
                     if (!file) return alert('Lütfen bir dosya seçin.');
                     const reader = new FileReader();
 
-                    // Yeni dosya seçildiğinde doğru/yanlış sayaçlarını sıfırla
                     this.resetCounters();
 
                     reader.onload = (e) => {
@@ -79,13 +170,13 @@
                             this.wordCards = jsonData.map(row => ({
                                 arabic: row['arabic_word'] || 'Bilinmiyor',
                                 turkish: row['turkish_meaning'] || 'Bilinmiyor',
-                                hasRead: false // her kelimenin okunduğunu takip et
+                                hasRead: false
                             }));
 
                             this.shuffleArray(this.wordCards);
                             this.isTestStarted = true;
                             this.showOptions();
-                            this.readWord(this.currentWord); // Kelimeyi oku
+                            this.readWord(this.currentWord);
                         } catch (err) {
                             alert('Hata: Excel dosyası okunamadı.');
                         }
@@ -102,16 +193,15 @@
                     this.isCorrect = false;
                 },
 
-                // Arapça kelimeyi okuma fonksiyonu
                 readWord(card) {
-                    if (card.hasRead) return; // Eğer kelime okunduysa tekrar okuma
+                    if (card.hasRead) return;
 
                     const utterance = new SpeechSynthesisUtterance(card.arabic);
-                    utterance.lang = 'ar-SA'; // Arapça dil kodu
+                    utterance.lang = 'ar-SA';
 
                     if ('speechSynthesis' in window) {
                         speechSynthesis.speak(utterance);
-                        card.hasRead = true; // Kelimenin okunduğunu işaretle
+                        card.hasRead = true;
                     } else {
                         console.warn('Tarayıcınız konuşma sentezlemesini desteklemiyor.');
                     }
@@ -120,13 +210,10 @@
                 showOptions() {
                     const correctOption = this.currentWord.turkish;
                     const otherOptions = this.wordCards
-                        .filter((_, index) => index !== this.currentCardIndex) // Doğru cevabı dışarıda bırak
+                        .filter((_, index) => index !== this.currentCardIndex)
                         .map(card => card.turkish);
 
-                    // Diğer yanlış cevaplardan her seferinde 3 tane rastgele seçiyoruz
                     const randomIncorrectOptions = this.shuffleArray(otherOptions).slice(0, 3);
-
-                    // Doğru cevabı diğer yanlış cevaplarla karıştır
                     this.currentOptions = this.shuffleArray([correctOption, ...randomIncorrectOptions]);
                     this.correctAnswer = correctOption;
                 },
@@ -141,10 +228,8 @@
                         this.incorrectCount++;
                     }
 
-                    // Sorudan sonra Arapça kelimeyi tekrar oku
                     this.readWord(this.currentWord);
 
-                    // Otomatik olarak bir sonraki karta geçiş
                     setTimeout(() => this.nextCard(), 1500);
                 },
 
@@ -154,7 +239,7 @@
 
                     if (this.currentCardIndex < this.wordCards.length) {
                         this.showOptions();
-                        this.readWord(this.currentWord); // Kelimeyi oku
+                        this.readWord(this.currentWord);
                     } else {
                         alert(`Test tamamlandı! Skorunuz: ${this.correctCount}/${this.wordCards.length}`);
                         this.resetTest();
