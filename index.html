@@ -8,10 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* Genel ayarlar */
-        *,
-        *::before,
-        *::after {
+        * {
             box-sizing: border-box;
         }
 
@@ -30,9 +27,15 @@
             background-color: #ffffff;
             border-radius: 15px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            width: 80%;
-            max-width: 600px;
+            padding: 20px;
+            width: 90%;
+            max-width: 800px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .main-content {
+            flex: 1;
             text-align: center;
         }
 
@@ -64,7 +67,7 @@
 
         .options button {
             font-size: 20px;
-            padding: 15px 30px;
+            padding: 10px 20px;
             margin: 10px;
             background-color: #3498db;
             color: white;
@@ -105,31 +108,66 @@
             background-color: #3498db;
             border-radius: 5px;
         }
+
+        .incorrect-list {
+            flex: 0 0 200px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 10px;
+            overflow-y: auto;
+            height: 400px;
+        }
+
+        .incorrect-list h3 {
+            color: #721c24;
+        }
+
+        .incorrect-list ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .incorrect-list li {
+            color: #721c24;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
     <div id="app">
-        <input type="file" @change="loadExcel" />
-        <div v-if="isTestStarted">
-            <div v-if="answerShown">
-                <p v-if="isCorrect" class="correct-answer">Doğru cevap! 🎉</p>
-                <p v-else class="wrong-answer">Yanlış cevap! 😞 Doğru cevap: {{ correctAnswer }}</p>
-            </div>
-            <div v-else>
-                <p class="arabic">{{ currentWord.arabic }}</p>
-                <div class="options">
-                    <button v-for="option in currentOptions" :key="option" @click="checkAnswer(option)">
-                        {{ option }}
-                    </button>
+        <div class="main-content">
+            <input type="file" @change="loadExcel" />
+            <div v-if="isTestStarted">
+                <div v-if="answerShown">
+                    <p v-if="isCorrect" class="correct-answer">Doğru cevap! 🎉</p>
+                    <p v-else class="wrong-answer">Yanlış cevap! 😞 Doğru cevap: {{ correctAnswer }}</p>
+                </div>
+                <div v-else>
+                    <p class="arabic">{{ currentWord.arabic }}</p>
+                    <div class="options">
+                        <button v-for="option in currentOptions" :key="option" @click="checkAnswer(option)">
+                            {{ option }}
+                        </button>
+                    </div>
                 </div>
             </div>
+            <div class="score">
+                <p>Doğru: {{ correctCount }}</p>
+                <p>Yanlış: {{ incorrectCount }}</p>
+            </div>
+            <div class="progress-bar">
+                <div :style="{ width: progressPercentage + '%' }" class="progress"></div>
+            </div>
         </div>
-        <div class="score">
-            <p>Doğru: {{ correctCount }}</p>
-            <p>Yanlış: {{ incorrectCount }}</p>
-        </div>
-        <div class="progress-bar">
-            <div :style="{ width: progressPercentage + '%' }" class="progress"></div>
+        <div class="incorrect-list">
+            <h3>Yanlış Cevaplar</h3>
+            <ul>
+                <li v-for="item in incorrectAnswers" :key="item.arabic">
+                    {{ item.arabic }} - {{ item.correct }}
+                </li>
+            </ul>
         </div>
     </div>
 
@@ -144,6 +182,7 @@
                 correctAnswer: '',
                 correctCount: 0,
                 incorrectCount: 0,
+                incorrectAnswers: [],
                 answerShown: false,
                 isCorrect: false,
             },
@@ -174,14 +213,12 @@
 
                             this.wordCards = jsonData.map(row => ({
                                 arabic: row['arabic_word'] || 'Bilinmiyor',
-                                turkish: row['turkish_meaning'] || 'Bilinmiyor',
-                                hasRead: false
+                                turkish: row['turkish_meaning'] || 'Bilinmiyor'
                             }));
 
                             this.shuffleArray(this.wordCards);
                             this.isTestStarted = true;
                             this.showOptions();
-                            this.readWord(this.currentWord);
                         } catch (err) {
                             alert('Hata: Excel dosyası okunamadı.');
                         }
@@ -193,20 +230,18 @@
                 resetCounters() {
                     this.correctCount = 0;
                     this.incorrectCount = 0;
+                    this.incorrectAnswers = [];
                     this.currentCardIndex = 0;
                     this.answerShown = false;
                     this.isCorrect = false;
                 },
 
                 readWord(card) {
-                    if (card.hasRead) return;
-
                     const utterance = new SpeechSynthesisUtterance(card.arabic);
                     utterance.lang = 'ar-SA';
 
                     if ('speechSynthesis' in window) {
                         speechSynthesis.speak(utterance);
-                        card.hasRead = true;
                     } else {
                         console.warn('Tarayıcınız konuşma sentezlemesini desteklemiyor.');
                     }
@@ -221,6 +256,8 @@
                     const randomIncorrectOptions = this.shuffleArray(otherOptions).slice(0, 3);
                     this.currentOptions = this.shuffleArray([correctOption, ...randomIncorrectOptions]);
                     this.correctAnswer = correctOption;
+
+                    this.readWord(this.currentWord); // Okuma işlemi
                 },
 
                 checkAnswer(option) {
@@ -231,9 +268,11 @@
                         this.correctCount++;
                     } else {
                         this.incorrectCount++;
+                        this.incorrectAnswers.push({
+                            arabic: this.currentWord.arabic,
+                            correct: this.correctAnswer
+                        });
                     }
-
-                    this.readWord(this.currentWord);
 
                     setTimeout(() => this.nextCard(), 1500);
                 },
@@ -244,7 +283,6 @@
 
                     if (this.currentCardIndex < this.wordCards.length) {
                         this.showOptions();
-                        this.readWord(this.currentWord);
                     } else {
                         alert(`Test tamamlandı! Skorunuz: ${this.correctCount}/${this.wordCards.length}`);
                         this.resetTest();
