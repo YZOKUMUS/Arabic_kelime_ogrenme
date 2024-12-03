@@ -59,16 +59,26 @@
             margin: 20px auto;
             font-weight: lighter;
             color: #333;
-            background-color: #1fe0; * Fully transparent shorthand *
+            background-color: #1fe0; /* Tamamen şeffaf */
             border: 2px solid #4CAF50;
             border-radius: 25% 10%;
             padding: 20px;
         }
 
+        .options {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
         .options button {
             font-size: 20px;
-            padding: 10px 20px;
-            margin: 10px;
+            width: 150px; /* Sabit genişlik */
+            height: 50px; /* Sabit yükseklik */
+            display: flex;
+            align-items: center; /* Dikey hizalama */
+            justify-content: center; /* Yatay hizalama */
             background-color: #3498db;
             color: white;
             border: none;
@@ -285,15 +295,8 @@
                         this.showOptions();
                     } else {
                         alert(`Test tamamlandı! Skorunuz: ${this.correctCount}/${this.wordCards.length}`);
-                        this.resetTest();
+                        this.isTestStarted = false;
                     }
-                },
-
-                resetTest() {
-                    this.isTestStarted = false;
-                    this.wordCards = [];
-                    this.currentOptions = [];
-                    this.resetCounters();
                 },
 
                 shuffleArray(array) {
