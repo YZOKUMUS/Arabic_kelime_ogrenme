@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Excel Quiz</title>
+    <title>Kelime Oyunu</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -21,6 +20,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            overflow: hidden;
         }
 
         #app {
@@ -28,57 +28,81 @@
             border-radius: 15px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            width: 90%;
-            max-width: 800px;
             display: flex;
-            gap: 20px;
+            gap: 10px;
+            width: 100%;
+            max-width: 1200px;
+            height: 90%;
         }
 
-        .main-content {
-            flex: 1;
-            text-align: center;
-        }
-
-        input[type="file"] {
-            margin-bottom: 20px;
+        .sidebar {
+            flex: 0 0 250px;
+            background-color: #f1f1f1;
+            border-radius: 10px;
             padding: 10px;
-            background-color: #4CAF50;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            margin: 0 0 10px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar button {
+            width: 100%;
+            padding: 10px;
+            background-color: #3498db;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
+            transition: background-color 0.3s ease;
         }
 
-        input[type="file"]:hover {
-            background-color: #45a049;
+        .sidebar button:hover {
+            background-color: #2980b9;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
 
         .arabic {
-            font-size: 125px;
+            font-size: 80px;
             margin: 20px auto;
             font-weight: lighter;
             color: #333;
-            background-color: #1fe0; /* Tamamen şeffaf */
             border: 2px solid #4CAF50;
             border-radius: 25% 10%;
             padding: 20px;
+            text-align: center;
         }
 
         .options {
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 10px;
         }
 
         .options button {
-            font-size: 20px;
-            width: 150px; /* Sabit genişlik */
-            height: 50px; /* Sabit yükseklik */
-            display: flex;
-            align-items: center; /* Dikey hizalama */
-            justify-content: center; /* Yatay hizalama */
+            font-size: 16px;
+            width: 120px;
+            height: 40px;
             background-color: #3498db;
             color: white;
             border: none;
@@ -93,12 +117,12 @@
 
         .correct-answer {
             color: #2ecc71;
-            font-size: 24px;
+            font-size: 20px;
         }
 
         .wrong-answer {
             color: #e74c3c;
-            font-size: 24px;
+            font-size: 20px;
         }
 
         .score {
@@ -119,36 +143,43 @@
             border-radius: 5px;
         }
 
-        .incorrect-list {
-            flex: 0 0 200px;
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            border-radius: 10px;
-            padding: 10px;
-            overflow-y: auto;
-            height: 400px;
+        /* Yanlış cevaplar listesi için stil */
+        .wrong-answers-list {
+            margin-top: 20px;
+            width: 100%;
         }
 
-        .incorrect-list h3 {
-            color: #721c24;
-        }
-
-        .incorrect-list ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .incorrect-list li {
-            color: #721c24;
+        .wrong-answers-list h4 {
             margin-bottom: 10px;
+            font-size: 18px;
+            color: #e74c3c;
         }
+
+        .wrong-answers-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .wrong-answers-list li {
+            margin-bottom: 10px;
+            font-size: 16px;
+            color: #333;
+        }
+
     </style>
 </head>
 <body>
     <div id="app">
+        <div class="sidebar">
+            <h3>Süreler</h3>
+            <ul>
+                <li v-for="sure in sureler" :key="sure">
+                    <button @click="selectSure(sure)" :class="{ active: sure === selectedSure }">{{ sure }}</button>
+                </li>
+            </ul>
+        </div>
+
         <div class="main-content">
-            <input type="file" @change="loadExcel" />
             <div v-if="isTestStarted">
                 <div v-if="answerShown">
                     <p v-if="isCorrect" class="correct-answer">Doğru cevap! 🎉</p>
@@ -162,6 +193,7 @@
                         </button>
                     </div>
                 </div>
+                <audio :src="currentWord.soundUrl" autoplay></audio>
             </div>
             <div class="score">
                 <p>Doğru: {{ correctCount }}</p>
@@ -170,14 +202,16 @@
             <div class="progress-bar">
                 <div :style="{ width: progressPercentage + '%' }" class="progress"></div>
             </div>
-        </div>
-        <div class="incorrect-list">
-            <h3>Yanlış Cevaplar</h3>
-            <ul>
-                <li v-for="item in incorrectAnswers" :key="item.arabic">
-                    {{ item.arabic }} - {{ item.correct }}
-                </li>
-            </ul>
+
+            <!-- Yanlış Cevaplar Listesi -->
+            <div v-if="wrongAnswers.length > 0" class="wrong-answers-list">
+                <h4>Yanlış Cevaplar:</h4>
+                <ul>
+                    <li v-for="(item, index) in wrongAnswers" :key="index">
+                        <strong>{{ item.sureAdi }}:</strong> <span>{{ item.word }} - {{ item.turkish }}</span>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -192,69 +226,71 @@
                 correctAnswer: '',
                 correctCount: 0,
                 incorrectCount: 0,
-                incorrectAnswers: [],
                 answerShown: false,
                 isCorrect: false,
+                sureler: [],
+                selectedSure: '',
+                allWords: [],
+                wrongAnswers: [] // Yanlış cevapları saklamak için
             },
             computed: {
                 currentWord() {
                     return this.wordCards[this.currentCardIndex] || {};
                 },
                 progressPercentage() {
-                    return (this.correctCount / this.wordCards.length) * 100;
+                    return this.wordCards.length ? (this.correctCount / this.wordCards.length) * 100 : 0;
                 }
             },
+            mounted() {
+                this.loadJson();
+            },
             methods: {
-                loadExcel(event) {
-                    const file = event.target.files[0];
-                    if (!file) return alert('Lütfen bir dosya seçin.');
-                    const reader = new FileReader();
+                loadJson() {
+                    fetch('./output.json')
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Dosya okunamadı');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            const surelerSet = new Set(data.map(row => row.sure_adi));
+                            this.sureler = Array.from(surelerSet);
 
+                            this.allWords = data.map(row => ({
+                                arabic: row['arabic_word'] || 'Bilinmiyor',
+                                turkish: row['turkish_meaning'] || 'Bilinmiyor',
+                                soundUrl: row['sound_url'] || '',
+                                sureAdi: row['sure_adi'] || 'Bilinmiyor'
+                            }));
+                        })
+                        .catch(err => {
+                            console.error('Hata:', err);
+                            alert('JSON dosyası yüklenemedi.');
+                        });
+                },
+
+                selectSure(sure) {
+                    this.selectedSure = sure;
+                    this.wordCards = this.allWords.filter(word => word.sureAdi === sure);
                     this.resetCounters();
 
-                    reader.onload = (e) => {
-                        try {
-                            const data = e.target.result;
-                            const workbook = XLSX.read(data, { type: 'array' });
-                            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                            const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-                            if (!jsonData.length) throw new Error('Excel boş veya yanlış formatta.');
-
-                            this.wordCards = jsonData.map(row => ({
-                                arabic: row['arabic_word'] || 'Bilinmiyor',
-                                turkish: row['turkish_meaning'] || 'Bilinmiyor'
-                            }));
-
-                            this.shuffleArray(this.wordCards);
-                            this.isTestStarted = true;
-                            this.showOptions();
-                        } catch (err) {
-                            alert('Hata: Excel dosyası okunamadı.');
-                        }
-                    };
-
-                    reader.readAsArrayBuffer(file);
+                    if (this.wordCards.length > 0) {
+                        this.shuffleArray(this.wordCards);
+                        this.isTestStarted = true;
+                        this.showOptions();
+                    } else {
+                        alert('Bu surede kelime bulunamadı.');
+                    }
                 },
 
                 resetCounters() {
                     this.correctCount = 0;
                     this.incorrectCount = 0;
-                    this.incorrectAnswers = [];
                     this.currentCardIndex = 0;
                     this.answerShown = false;
                     this.isCorrect = false;
-                },
-
-                readWord(card) {
-                    const utterance = new SpeechSynthesisUtterance(card.arabic);
-                    utterance.lang = 'ar-SA';
-
-                    if ('speechSynthesis' in window) {
-                        speechSynthesis.speak(utterance);
-                    } else {
-                        console.warn('Tarayıcınız konuşma sentezlemesini desteklemiyor.');
-                    }
+                    this.wrongAnswers = []; // Yanlış cevaplar listesi sıfırlanıyor
                 },
 
                 showOptions() {
@@ -266,8 +302,6 @@
                     const randomIncorrectOptions = this.shuffleArray(otherOptions).slice(0, 3);
                     this.currentOptions = this.shuffleArray([correctOption, ...randomIncorrectOptions]);
                     this.correctAnswer = correctOption;
-
-                    this.readWord(this.currentWord); // Okuma işlemi
                 },
 
                 checkAnswer(option) {
@@ -275,26 +309,27 @@
                     this.answerShown = true;
 
                     if (this.isCorrect) {
-                        this.correctCount++;
+                        this.correctCount++; // Doğru cevapsa doğru sayısını arttır
                     } else {
-                        this.incorrectCount++;
-                        this.incorrectAnswers.push({
-                            arabic: this.currentWord.arabic,
-                            correct: this.correctAnswer
+                        this.incorrectCount++; // Yanlış cevapsa yanlış sayısını arttır
+                        this.wrongAnswers.push({
+                            sureAdi: this.selectedSure,
+                            word: this.currentWord.arabic,
+                            turkish: this.correctAnswer
                         });
                     }
 
-                    setTimeout(() => this.nextCard(), 1500);
+                    // Bir sonraki kelimeye geç
+                    this.nextWord();
                 },
 
-                nextCard() {
-                    this.answerShown = false;
-                    this.currentCardIndex++;
-
-                    if (this.currentCardIndex < this.wordCards.length) {
+                nextWord() {
+                    if (this.currentCardIndex < this.wordCards.length - 1) {
+                        this.currentCardIndex++;
                         this.showOptions();
+                        this.answerShown = false;
                     } else {
-                        alert(`Test tamamlandı! Skorunuz: ${this.correctCount}/${this.wordCards.length}`);
+                        alert('Test tamamlandı!');
                         this.isTestStarted = false;
                     }
                 },
