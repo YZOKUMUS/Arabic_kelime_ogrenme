@@ -77,7 +77,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             overflow: hidden;
         }
 
@@ -181,36 +181,30 @@
 
         <div class="main-content">
             <div v-if="isTestStarted">
-                <div v-if="answerShown">
-                    <p v-if="isCorrect" class="correct-answer">Doğru cevap! 🎉</p>
-                    <p v-else class="wrong-answer">Yanlış cevap! 😞 Doğru cevap: {{ correctAnswer }}</p>
-                </div>
-                <div v-else>
-                    <p class="arabic">{{ currentWord.arabic }}</p>
-                    <div class="options">
-                        <button v-for="option in currentOptions" :key="option" @click="checkAnswer(option)">
-                            {{ option }}
-                        </button>
-                    </div>
+                <div class="arabic">{{ currentWord.arabic }}</div>
+                <div class="options">
+                    <button v-for="option in currentOptions" :key="option" @click="checkAnswer(option)">
+                        {{ option }}
+                    </button>
                 </div>
                 <audio :src="currentWord.soundUrl" autoplay></audio>
-            </div>
-            <div class="score">
-                <p>Doğru: {{ correctCount }}</p>
-                <p>Yanlış: {{ incorrectCount }}</p>
-            </div>
-            <div class="progress-bar">
-                <div :style="{ width: progressPercentage + '%' }" class="progress"></div>
-            </div>
+                <div class="score">
+                    <p>Doğru: {{ correctCount }}</p>
+                    <p>Yanlış: {{ incorrectCount }}</p>
+                </div>
+                <div class="progress-bar">
+                    <div :style="{ width: progressPercentage + '%' }" class="progress"></div>
+                </div>
 
-            <!-- Yanlış Cevaplar Listesi -->
-            <div v-if="wrongAnswers.length > 0" class="wrong-answers-list">
-                <h4>Yanlış Cevaplar:</h4>
-                <ul>
-                    <li v-for="(item, index) in wrongAnswers" :key="index">
-                        <strong>{{ item.sureAdi }}:</strong> <span>{{ item.word }} - {{ item.turkish }}</span>
-                    </li>
-                </ul>
+                <!-- Yanlış Cevaplar Listesi -->
+                <div v-if="wrongAnswers.length > 0" class="wrong-answers-list">
+                    <h4>Yanlış Cevaplar:</h4>
+                    <ul>
+                        <li v-for="(item, index) in wrongAnswers" :key="index">
+                            <strong>{{ item.sureAdi }}:</strong> <span>{{ item.word }} - {{ item.turkish }}</span>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -227,7 +221,6 @@
                 correctCount: 0,
                 incorrectCount: 0,
                 answerShown: false,
-                isCorrect: false,
                 sureler: [],
                 selectedSure: '',
                 allWords: [],
@@ -289,8 +282,7 @@
                     this.incorrectCount = 0;
                     this.currentCardIndex = 0;
                     this.answerShown = false;
-                    this.isCorrect = false;
-                    this.wrongAnswers = []; // Yanlış cevaplar listesi sıfırlanıyor
+                    this.wrongAnswers = [];
                 },
 
                 showOptions() {
@@ -305,21 +297,16 @@
                 },
 
                 checkAnswer(option) {
-                    this.isCorrect = option === this.correctAnswer;
-                    this.answerShown = true;
-
-                    if (this.isCorrect) {
-                        this.correctCount++; // Doğru cevapsa doğru sayısını arttır
+                    if (option === this.correctAnswer) {
+                        this.correctCount++;
                     } else {
-                        this.incorrectCount++; // Yanlış cevapsa yanlış sayısını arttır
+                        this.incorrectCount++;
                         this.wrongAnswers.push({
                             sureAdi: this.selectedSure,
                             word: this.currentWord.arabic,
                             turkish: this.correctAnswer
                         });
                     }
-
-                    // Bir sonraki kelimeye geç
                     this.nextWord();
                 },
 
@@ -327,9 +314,8 @@
                     if (this.currentCardIndex < this.wordCards.length - 1) {
                         this.currentCardIndex++;
                         this.showOptions();
-                        this.answerShown = false;
                     } else {
-                        alert('Test tamamlandı!');
+                        alert('Test tamamlandı! Başka bir sure seçebilirsiniz.');
                         this.isTestStarted = false;
                     }
                 },
